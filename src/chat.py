@@ -25,7 +25,6 @@ def main():
             case _:
                 history.append({"role": "user", "content": text})
                 response = send_message(history)
-                print(response)
                 history.append({"role": "assistant", "content": response})
 
 
