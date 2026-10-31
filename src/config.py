@@ -1,0 +1,5 @@
+MODEL = "gpt-4o-mini"
+#Current rate as per OpenAI docs 2026-10-31
+INPUT_RATE = 0.15 / 1_000_000
+OUTPUT_RATE = 0.60 / 1_000_000
+BUDGET = 150
