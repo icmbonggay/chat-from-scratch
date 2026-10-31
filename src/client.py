@@ -12,6 +12,7 @@ DONE = object()
 
 def send_message(messages):
     pieces = []
+    usage = {}
     headers = {
         "Authorization": f"Bearer {api_key}",
         "Content-type": "application/json"
@@ -20,11 +21,13 @@ def send_message(messages):
     payload = {
         "model": "gpt-4o-mini",
         "messages": messages,
-        "stream": True
+        "stream": True,
+        "stream_options": {"include_usage": True} 
     }
 
     try:
         response = requests.post(url, headers=headers, json=payload, stream=True)
+
         if response.status_code != 200:
             try:
                 error_json = response.json()
@@ -35,16 +38,21 @@ def send_message(messages):
             raise APIError(error_message, response.status_code)
 
         for line in response.iter_lines():
+            # print(line)
             parsed = parse_sse(line)
 
             if parsed is None:
                 continue
             elif parsed is DONE:
                 print("\n")
-                return "".join(pieces)
+                return "".join(pieces), usage
+            elif isinstance(parsed, dict):
+                usage = parsed
             else:
                 print(parsed, end="", flush=True)
                 pieces.append(parsed)
+        
+       
 
            
     except requests.exceptions.RequestException as e:
@@ -65,7 +73,9 @@ def parse_sse(line):
 
     try:
         parsed_data = json.loads(data_value)
-        if "choices" in parsed_data and "content" in parsed_data["choices"][0]["delta"]:
+        if "usage" in parsed_data and parsed_data["usage"] is not None:
+            return parsed_data["usage"]
+        if "choices" in parsed_data and parsed_data["choices"] and  "content" in parsed_data["choices"][0]["delta"] :
             output = parsed_data["choices"][0]["delta"]["content"]
             return output
     except json.JSONDecodeError:

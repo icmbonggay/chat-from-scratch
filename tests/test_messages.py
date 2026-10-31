@@ -6,7 +6,7 @@ def test_chat_history_returns_correct_length(monkeypatch):
 
     def mock_send_message(history):
         captured_histories.append([dict(msg) for msg in history])
-        return "Mock response"
+        return "Mock response", {"prompt_tokens": 10, "completion_tokens": 5}
 
     user_inputs = iter([
         "Hi. my name is Alice! What is a server?", 
